@@ -17,6 +17,13 @@ namespace Cradle
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        Texture2D planetTexture;
+        Texture2D menuTexture;
+
+        Color aColor;
+
+        bool displayMenu;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -26,6 +33,21 @@ namespace Cradle
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            //screen resolution
+            int viewportWidth = 1920;
+            int viewportHeight = 1080;
+
+            //set up the viewport to match screen resolution and set to full screen
+            graphics.PreferredBackBufferWidth = viewportWidth;
+            graphics.PreferredBackBufferHeight = viewportHeight;
+            //graphics.IsFullScreen = true;
+            graphics.ApplyChanges();
+
+            this.IsMouseVisible = true;
+
+            aColor = Color.CornflowerBlue;
+
+            displayMenu = false;
 
             base.Initialize();
         }
@@ -34,8 +56,9 @@ namespace Cradle
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            // TODO: use this.Content to load your game content here
+            planetTexture = Content.Load<Texture2D>("Planet");
+            menuTexture = Content.Load<Texture2D>("MenuPH500x500");
+            
         }
 
         protected override void UnloadContent()
@@ -45,20 +68,56 @@ namespace Cradle
 
         protected override void Update(GameTime gameTime)
         {
-            // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape) == true)
+            {
                 this.Exit();
+            }
+            MouseState mouseState;
+            mouseState = Mouse.GetState();
+            //check if planet has been clicked.
+            
+            Rectangle mouseClickArea = new Rectangle(mouseState.X, mouseState.Y, 5, 5);
 
-            // TODO: Add your update logic here
+            Rectangle rec = new Rectangle(400+15, 300+15, planetTexture.Width - 25, planetTexture.Height - 25);
+
+            if (mouseClickArea.Intersects(rec)&& mouseState.LeftButton == ButtonState.Pressed)
+            {
+                displayMenu = true;
+            }
+            else
+            {
+                aColor = Color.CornflowerBlue;
+            }
+
+            if (displayMenu)
+            {
+                Rectangle mouseClickMenuArea = new Rectangle(mouseState.X, mouseState.Y, 5, 5);
+                Rectangle cancelRec = new Rectangle(745,705,140,55);
+                if (mouseClickMenuArea.Intersects(cancelRec) && mouseState.LeftButton == ButtonState.Pressed)
+                {
+                    displayMenu = false;
+                }
+                else
+                {
+                    aColor = Color.CornflowerBlue;
+                }
+            }
 
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(aColor);
+            
+            spriteBatch.Begin();
+            spriteBatch.Draw(planetTexture, new Vector2(400,300), Color.White);
 
-            // TODO: Add your drawing code here
+            if (displayMenu)
+            {
+                spriteBatch.Draw(menuTexture, new Vector2(GraphicsDevice.Viewport.Width / 2 - menuTexture.Width / 2, GraphicsDevice.Viewport.Height / 2 - menuTexture.Height / 2), Color.White);
+            }
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }
